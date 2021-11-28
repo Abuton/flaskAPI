@@ -1,0 +1,37 @@
+Allow Employee to add new Customer
+---
+tags:
+  - BankFunction
+parameters:
+  - name: body
+    description: The body should contain the neccessary information to create a new account. Employee needs to be logged in to use this function
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - "cust_ssn_id"
+        - "acc_type"
+        - "amount"
+      properties:
+        cust_ssn_id:
+          type: "number"
+          example: "23"
+        acc_type:
+          type: "string"
+          example: "current"
+        amount:
+          type: "number"
+          example: "300"
+responses:
+  200:
+    description: When the page loads successfully and new customer is added to db
+
+  401:
+    description: A user supplies incorrect details
+
+  404:
+    description: When page is not found
+
+  500:
+    description: When an Internal Server Error Occur

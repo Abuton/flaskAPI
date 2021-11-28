@@ -1,0 +1,29 @@
+Allow Employee to transfer Amount between accounts
+---
+tags:
+  - BankFunction
+parameters:
+  - name: body
+    description: The body should contain the customer's ssn id. Employee needs to be logged in to use this function
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - "cust_ssn_id"
+      properties:
+        cust_ssn_id:
+          type: "number"
+          example: "34"
+responses:
+  200:
+    description: When the page loads successfully and transaction complete without error
+
+  401:
+    description: A user supplies incorrect account id
+
+  404:
+    description: When page is not found
+
+  500:
+    description: When an Internal Server Error Occur

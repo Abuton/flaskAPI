@@ -1,0 +1,29 @@
+Allow Employee to retrive transfer history of a given customer
+---
+tags:
+  - BankFunction
+parameters:
+  - name: body
+    description: The body should contain account id. Employee needs to be logged in to use this function
+    in: body
+    required: true
+    schema:
+      type: object
+      required:
+        - "acc_id"
+      properties:
+        acc_id:
+          type: "number"
+          example: "1234567890"
+responses:
+  200:
+    description: When the page loads successfully and json object is returned to frontend
+
+  401:
+    description: A user supplies incorrect account_id
+
+  404:
+    description: When page is not found
+
+  500:
+    description: When an Internal Server Error Occur

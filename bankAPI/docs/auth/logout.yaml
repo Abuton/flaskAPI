@@ -1,0 +1,17 @@
+User log out
+---
+tags:
+  - Authentication
+
+responses:
+  200:
+    description: When a user successfully logs out
+
+  400:
+    description: Fails to logout due to bad request data
+
+  404:
+    description: When page is not found
+
+  500:
+    description: When an Internal Server Error Occur
