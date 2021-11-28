@@ -1,6 +1,6 @@
 # Bank Flask Route
 
-To perform some basic financial instituition operations like:
+For financial instituition Employees to perform some basic financial instituition operations like:
 
 - edit customer
 - add customer
@@ -26,3 +26,5 @@ Learned a great deal and it was worth it
 - Swagger (flasgger) : Documentation
 - Unittest : Well for you guessed it..
 - Water to cool off
+
+Enjoy
