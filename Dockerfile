@@ -1,11 +1,15 @@
-FROM python:alpine3.7
+FROM python:alpine3.9
 
 COPY requirements.txt /
 RUN pip3 install -r /requirements.txt
 
-COPY . /bankAppServer
-WORKDIR /bankAppServer
+COPY . /bankAPI
+WORKDIR /bankAPI
 
-ENV FLASK_APP=bankAppServer
+RUN python3 bankAPI/model/database.py
 
-ENTRYPOINT ["./gunicorn_starter.sh"]
+RUN python3 bankAPI/load_data.py
+
+ENV FLASK_APP=bankAPI
+
+CMD ["flask", "run"]
