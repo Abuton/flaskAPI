@@ -30,18 +30,20 @@ Your assignment is to build an internal API for a fake financial institution usi
 
 To run the tests, user will have to change directory into the tests folder
 and execute
-``` python base.py ```
-``` python test.py ```
-``` python test_main_routes.py ```
+
+- ``` python base.py ```
+- ``` python test.py ```
+- ``` python test_main_routes.py ```
 
 ### To build the docker Image
 
 User should execute the following code
-``` bash make-image.sh ```
+
+- ``` bash make-image.sh ```
 
 ### To access the API Documentation
 
-Run ``` flask run ``` from the root folder `saltpay...`
+Run ``` flask run ``` from the root folder `name...`
 Or run ``` ./startapp.sh ``` from the root folder
 
 open browser and navigate to
