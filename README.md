@@ -13,7 +13,7 @@ For financial instituition Employees to perform some basic financial instituitio
 
 ## Documentation
 
-Most Route defined were well documented.
+Routes are documented. Shows Examples, and expected response
 
 ### Achievement
 
