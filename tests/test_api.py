@@ -1,7 +1,5 @@
-import sys
-import os
 import unittest
-from bankAppServer import app
+from bankAPI import create_app
 
 
 class FlaskTestCase(unittest.TestCase):
@@ -15,6 +13,7 @@ class FlaskTestCase(unittest.TestCase):
 
     # check status code for the home page at route (/demo1)
     def test_homepage(self):
+        app = create_app()
         tester = app.test_client(self)
         response = tester.get('/')
         statuscode = response.status_code
