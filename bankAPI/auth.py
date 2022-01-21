@@ -77,7 +77,7 @@ def login():
                     message=f"{user.name.capitalize()}, you are successfully logged in!",
                 )
             else:
-                return jsonify(success=False, status_code=400, message"Incorrect Username or Password.")
+                return jsonify(success=False, status_code=400, message="Incorrect Username or Password.")
 
         return jsonify(success=False, status_code=400, message="Sorry, Username or password does not match.")
 

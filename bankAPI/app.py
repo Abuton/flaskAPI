@@ -61,7 +61,7 @@ def addcustomer():
                                     message=f"Customer {query.name} is created with customer ID : {query.cust_ssn_id}.")
             else:
                 return jsonify(success=False, status_code=403,
-                                 message=f"SSN id : {cust_ssn_id} is already present in database.", "warning")
+                                 message=f"SSN id : {cust_ssn_id} is already present in database.")
 
 
 # route to edit customer
@@ -110,7 +110,7 @@ def editcustomer(cust_ssn_id=None):
 # route to deactivate customers account
 @bank.route("/deletecustomer")
 @bank.route("/deletecustomer")
-def deletecustomer()):
+def deletecustomer():
     if "user" not in session:
         return jsonify(success=False, status_code=404, message="User needs to be logged in")
     
@@ -195,7 +195,7 @@ def addaccount():
 
 
 # Adding route to transfer amount
-@bank.route("/transfer", methods=["POST"])
+@bank.route("/transfer", methods=["GET", "POST"])
 @swag_from("./docs/bankfunctions/transfer.yaml")
 def transfer():
     """Route to allow transfer of amount between accounts"""
@@ -303,7 +303,7 @@ def transfer():
                                                   message="Can't transfer to the same account")
                     return same_transfer_account_error
 # route to retrievebalance
-@bank.route("/retrievebalance", methods="GET")
+@bank.route("/retrievebalance", methods=["GET", "POST"])
 @swag_from("./docs/bankfunctions/retrivebalance.yaml")
 def retrieve_balance():
     """Route to retrieve account balance for a given account"""
