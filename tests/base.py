@@ -40,7 +40,7 @@ class BaseTestCase(unittest.TestCase):
         })
 
         # When
-        response = requests.get(self.URL, headers={"Content-Type": "application/json"}, data=payload)
+        response = requests.get(self.URL, headers={"Content-Type": "application/json"}, params=payload)
 
         self.assertEqual(str, type(response.text))
         self.assertEqual(200, response.status_code)
