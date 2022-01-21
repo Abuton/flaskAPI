@@ -27,6 +27,7 @@ class BaseTestCase(unittest.TestCase):
 
         emp = Employees("john mary", "jonny", "employee", "8712")
         db.add(emp)
+        db.commit()
         cust = Customers(5432, "Ibrahim Mubarak", "active")
         db.add(cust)
         db.commit()
@@ -39,11 +40,10 @@ class BaseTestCase(unittest.TestCase):
         })
 
         # When
-        response = requests.get(self.URL+'/login', headers={"Content-Type": "application/json"}, data=payload)
+        response = requests.get(self.URL, headers={"Content-Type": "application/json"}, data=payload)
 
-        # Then
         self.assertEqual(str, type(response.text))
-        self.assertEqual(500, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def tearDown(self):
         db.remove()
