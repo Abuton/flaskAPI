@@ -5,9 +5,6 @@ from flask import (
     session,
     render_template,
     request,
-    redirect,
-    url_for,
-    flash,
     g,
     Blueprint
 )
@@ -62,7 +59,7 @@ def login_required(view):
 def login():
     """Log in registered employee by adding the username to the session."""
     if "user" in session:
-        return redirect(url_for("dashboard"))
+        return jsonify(success=True, status_code=403, message="Already logged In")
 
     if request.method == "POST":
         usern = request.form.get("username")
@@ -76,21 +73,18 @@ def login():
                 session["username"] = user.username
                 session["namet"] = user.name
                 session["usert"] = user.user_type
-                flash(
-                    f"{user.name.capitalize()}, you are successfully logged in!",
-                    "success",
+                return jsonify(success=True, status_code=True,
+                    message=f"{user.name.capitalize()}, you are successfully logged in!",
                 )
-                return redirect(url_for("dashboard"))
             else:
-                flash("Incorrect Username or Password.", "danger")
-        flash("Sorry, Username or password does not match.", "danger")
-    return render_template("login.html")
+                return jsonify(success=False, status_code=400, message"Incorrect Username or Password.")
+
+        return jsonify(success=False, status_code=400, message="Sorry, Username or password does not match.")
 
 
-# Logout
 @auth.route("/logout")
 @swag_from("./docs/auth/logout.yaml")
 def logout():
     """Clear the current session, including the stored username"""
     session.clear()
-    return redirect(url_for("login"))
+    return jsonify(success=True, status_code=200, message="Successfully logged out.")
