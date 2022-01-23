@@ -1,11 +1,10 @@
 # import dependencies
 import os
-import functools
 from flask import (
     session,
     render_template,
     request,
-    g,
+    jsonify,
     Blueprint
 )
 # from flask_bcrypt import Bcrypt
@@ -39,18 +38,6 @@ def not_found(e):
 @auth.errorhandler(500)
 def unexpected_condition(e):
     return render_template("500.html")
-
-
-def login_required(view):
-    """View decorator that redirects anonymous users to the login page"""
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            return redirect(url_for("login"))
-
-        return view(**kwargs)
-
-    return wrapped_view
 
 
 # LOGIN
