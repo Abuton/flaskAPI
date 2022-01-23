@@ -32,19 +32,6 @@ class BaseTestCase(unittest.TestCase):
         db.add(cust)
         db.commit()
 
-    def test_login(self):
-        # Given
-        payload = json.dumps({
-            "username": "jonny",
-            "password": "8712"
-        })
-
-        # When
-        response = requests.get(self.URL, headers={"Content-Type": "application/json"}, params=payload)
-
-        self.assertEqual(str, type(response.text))
-        self.assertEqual(200, response.status_code)
-
     def tearDown(self):
         db.remove()
 
