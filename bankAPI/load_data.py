@@ -6,7 +6,7 @@ from flask import Flask
 
 app = Flask(__name__)
 engine = create_engine(
-    "sqlite:///database.db", connect_args={"check_same_thread": False}, echo=True
+    "mysql://root@localhost:3306/bankAPI"
 )
 Base.metadata.bind = engine
 db = scoped_session(sessionmaker(bind=engine))
