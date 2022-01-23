@@ -1,6 +1,6 @@
 import os
 from flask import request, jsonify, Blueprint
-
+import json
 from bankAPI.model.database import Base, Accounts, Transactions, CustomerLog, Customers
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -12,12 +12,17 @@ bank = Blueprint("bank", __name__, url_prefix="/")
 bank.secret_key = os.urandom(24)
 
 # Set up database
+DB_PATH = "mysql://root@localhost:3306/bankAPI"
 engine = create_engine(
-    "sqlite:///database.db", connect_args={"check_same_thread": False}, echo=True
+    DB_PATH, echo=False
 )
 # create db engine connection and start session
 Base.metadata.bind = engine
-db = scoped_session(sessionmaker(bind=engine))
+db = scoped_session(sessionmaker(
+    bind=engine,
+    autoflush=False,
+    autocommit=False
+    ))
 
 
 # route to add customers
@@ -175,7 +180,7 @@ def addaccount():
         ).fetchone()
         if customer_info is not None:
             # get random 10 digits number as account_id
-            account_id = random_with_N_digits(10)
+            account_id = random_with_N_digits(6)
             query = Accounts(
                 acc_id=account_id,
                 acc_type=acc_type,
@@ -212,112 +217,113 @@ def addaccount():
 @swag_from("./docs/bankfunctions/transfer.yaml")
 def transfer():
     """Route to allow transfer of amount between accounts"""
-    cust_ssn_id = int(request.form.get("cust_ssn_id"))
-    if cust_ssn_id is None:
-        return jsonify(
-            success=False, status_code=404, message="Customer ID can't be None"
-        )
-    else:
-        if request.method == "POST":
-            # get data from form
-            src_acc_id = request.form.get("src_acc_id")
-            trg_acc_id = request.form.get("trg_acc_id")
-            amount = int(request.form.get("amount"))
-            # check if the two accounts are different
-            if src_acc_id != trg_acc_id:
-                # get source data i.e where the amount will be transferred
-                src_data = db.execute(
-                    "select * from accounts where acc_id = :a and status='active'",
-                    {"a": src_acc_id},
-                ).fetchone()
-                # get target data i.e where the amount will be deposited
-                trg_data = db.execute(
-                    "select * from accounts where cust_ssn_id = :a and status='active'",
-                    {"a": trg_acc_id},
-                ).fetchone()
-                if src_data is not None and trg_data is not None:
-                    # check if amount is not greater than the src amount
-                    if src_data.balance > amount:
-                        try:
-                            # then perform the transaction
-                            src_balance = src_data.balance - amount
-                            trg_balance = trg_data.balance + amount
-                            # update the src account
-                            src_update = db.execute(
-                                "update accounts set balance = :b where acc_id = :a",
-                                {"b": src_balance, "a": src_acc_id},
-                            )
-                            db.add(src_update)
-                            db.commit()
-                            temp = Transactions(
-                                acc_id=src_data.acc_id,
-                                trans_message="Amount Transfered to "
-                                + str(trg_data.acc_id),
-                                amount=amount,
-                                transaction_type="TRANSFER",
-                            )
-                            # log the transaction
-                            db.add(temp)
-                            db.commit()
-                            # update the target account
-                            trg_update = db.execute(
-                                "update accounts set balance = :b where acc_id = :a",
-                                {"b": trg_balance, "a": trg_acc_id},
-                            )
-                            # log the transaction
-                            db.add(trg_update)
-                            db.commit()
-                            src_update = Transactions(
-                                acc_id=trg_data.acc_id,
-                                trans_message="Amount received from "
-                                + str(src_data.acc_id),
-                                amount=amount,
-                                transaction_type="DEPOSIT",
-                            )
-                            db.add(src_update)
-                            db.commit()
 
-                            return jsonify(
-                                message=f"Amount transfered to {trg_data.acc_id} from {src_data.acc_id} successfully",
-                                success=True,
-                                status_code=200,
-                            )
-                        except Exception as e:
-                            raise e
-
-                    else:
-                        return jsonify(
-                            success=False,
-                            status_code=403,
-                            message=f"{src_data.acc_id} has insufficient balance",
+    if request.method == "POST":
+        cust_ssn_id = int(request.form.get("cust_ssn_id"))
+        src_acc_id = request.form.get("src_acc_id")
+        trg_acc_id = request.form.get("trg_acc_id")
+        amount = float(request.form.get("amount"))
+        customer_info = db.execute(
+                "select * from customers where cust_ssn_id = :a",
+                {"a": cust_ssn_id},
+            ).fetchone()
+        if customer_info is None:
+            return jsonify(
+                success=False, status_code=404, message="Customer ID can't be None"
+            )
+        # check if the two accounts are different
+        if src_acc_id != trg_acc_id:
+            # get source data i.e where the amount will be transferred
+            src_data = db.execute(
+                "select * from accounts where acc_id = :a and status='active'",
+                {"a": src_acc_id},
+            ).fetchone()
+            # get target data i.e where the amount will be deposited
+            trg_data = db.execute(
+                "select * from accounts where acc_id = :a and status='active'",
+                {"a": trg_acc_id},
+            ).fetchone()
+            if src_data is not None and trg_data is not None:
+                # check if amount is not greater than the src amount
+                if src_data.balance > amount:
+                    try:
+                        # then perform the transaction
+                        src_balance = src_data.balance - amount
+                        trg_balance = trg_data.balance + amount
+                        # update the src account
+                        db.execute(
+                            "update accounts set balance = :b where acc_id = :a",
+                            {"b": src_balance, "a": src_acc_id},
                         )
+                        db.commit()
+                        temp = Transactions(
+                            acc_id=src_data.acc_id,
+                            trans_message="Amount Transfered to "
+                            + str(trg_data.acc_id),
+                            amount=amount,
+                            transaction_type="TRANSFER",
+                        )
+                        # log the transaction
+                        db.add(temp)
+                        db.commit()
+                        # update the target account
+                        db.execute(
+                            "update accounts set balance = :b where acc_id = :a",
+                            {"b": trg_balance, "a": trg_acc_id},
+                        )
+                        # log the transaction
+                        db.commit()
+                        src_update = Transactions(
+                            acc_id=trg_data.acc_id,
+                            trans_message="Amount received from "
+                            + str(src_data.acc_id),
+                            amount=amount,
+                            transaction_type="DEPOSIT",
+                        )
+                        db.add(src_update)
+                        db.commit()
 
-                elif src_data and not trg_data:
-                    transfer_account_error = jsonify(
-                        success=False,
-                        status_code=404,
-                        message=f"Target account {trg_data.acc_id} not Found",
-                    )
-                    return transfer_account_error
+                        return jsonify(
+                            message=f"Amount transfered to {trg_data.acc_id} from {src_data.acc_id} successfully",
+                            success=True,
+                            status_code=200,
+                        )
+                    except Exception as e:
+                        raise e
 
-                elif trg_data and not src_data:
-                    return jsonify(
-                        success=False,
-                        status_code=404,
-                        message=f"Source account {src_data.acc_id} not Found",
-                    )
                 else:
                     return jsonify(
                         success=False,
-                        status_code=404,
-                        message="Both accounts not Found try different ones",
+                        status_code=403,
+                        message=f"{src_data.acc_id} has insufficient balance",
                     )
+
+            elif src_data and not trg_data:
+                transfer_account_error = jsonify(
+                    success=False,
+                    status_code=404,
+                    message="Target account not found",
+                )
+                return transfer_account_error
+
+            elif trg_data and not src_data:
+                return jsonify(
+                    success=False,
+                    status_code=404,
+                    message="Source account not found",
+                )
             else:
                 return jsonify(
                     success=False,
-                    status_code=403,
-                    message="Can't transfer to the same account",
+                    status_code=404,
+                    message="Both accounts not Found try different ones",
                 )
+        else:
+            return jsonify(
+                success=False,
+                status_code=403,
+                message="Can't transfer to the same account",
+            )
 
 
 # route to retrievebalance
@@ -354,34 +360,33 @@ def retrieve_balance():
 
 
 # route to retrieve transfer history
-@bank.route("/transferhistory", methods=["GET"])
+@bank.route("/transferhistory", methods=["POST"])
 @swag_from("./docs/bankfunctions/retrivetransferhistory.yaml")
 def retrieve_transfer_history():
     """Route to retrieve transfer history"""
-    account_number = request.args.get("account_number")
+    account_number = request.form.get("account_number")
 
-    if request.method == "GET":
+    if request.method == "POST":
         account = db.execute(
             "select * from transactions where acc_id = :a", {"a": account_number}
         ).fetchall()
         # check if user exists in db
-        if account is not None and len(account) >= 1:
+        if account is not None:
             # get transfer history
             transfer_history = db.execute(
-                "select * from transactions where acc_id = :a and transaction_type = 'TRANSFER' ",
+                "select * from transactions where acc_id = :a and transacrion_type = 'TRANSFER' ",
                 {"a": account_number},
-            )
+            ).fetchone()
             if transfer_history is not None:
-                transfer_history = jsonify(
+                return jsonify(
                     success=True,
                     status_code=200,
-                    history=[a._asdict() for a in account_transfer_his],
+                    history=json.loads(transfer_history),
                 )
-                return transfer_history
+
         else:
-            transfer_history_error = jsonify(
+            return jsonify(
                 success=False,
-                status_code=404,
+                status_code=403,
                 message="Account not Found.try different one",
             )
-            return transfer_history_error
