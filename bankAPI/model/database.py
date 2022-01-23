@@ -1,13 +1,22 @@
-# .import dependencies
 import datetime
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 
+from sqlalchemy.orm import scoped_session, sessionmaker
+from flask_bcrypt import Bcrypt
+from flask import Flask
 
+app = Flask(__name__)
+engine = create_engine(
+    "mysql://root@localhost:3306/bankAPI"
+)
+db = scoped_session(sessionmaker(bind=engine))
+bcrypt = Bcrypt(app)
 Base = declarative_base()
+Base.metadata.bind = engine
 
 
 # model for employees table
@@ -132,10 +141,20 @@ class Transactions(Base):
         return '<trans_message - {}>'.format(self.trans_message)
 
 
+def create_db():
+    name = "bankAPI"
+    try:
+        db.execute(f"CREATE DATABASE IF NOT EXISTS {name}")
+        db.commit()
+        print(f"{name} DB created")
+    except Exception as e:
+        raise e
+
 if __name__ == "__main__":
     try:
         # create the database
-        engine = create_engine("sqlite:///database.db")
+        # create_db()
+        engine = create_engine("mysql://root@localhost:3306/bankAPI", echo=False)
         Base.metadata.create_all(engine)
         print("All Model Created Successfully!")
     except Exception as e:
