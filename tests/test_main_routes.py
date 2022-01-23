@@ -128,15 +128,16 @@ class BackAPITest(BaseTestCase):
         response = requests.post(self.URL + '/transferhistory', data=params)
         response = response.content.decode("utf-8")
         response = json.loads(response)
-        print("TR History", response)
+        # print("TR History", response)
         self.assertEqual(response["status_code"], 200)
-        # self.assertIn("Account not Found", response["history"])
+        self.assertIn("TRANSFER", response["history"])
 
     def test_retrieve_transfer_history_error(self):
-        params = {"account_number": "222996"}
+        params = {"account_number": "123456"}
 
         response = requests.post(self.URL + '/transferhistory', data=params)
         response = response.content.decode("utf-8")
+        print("TR Error History", response)
         response = json.loads(response)
         print("TR Error History", response)
         self.assertEqual(response["status_code"], 403)
