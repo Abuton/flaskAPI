@@ -381,12 +381,18 @@ def retrieve_transfer_history():
                 return jsonify(
                     success=True,
                     status_code=200,
-                    history=json.loads(transfer_history),
+                    history=list(transfer_history),
+                )
+            else:
+                return jsonify(
+                    success=False,
+                    status_code=403,
+                    message="Account not Found. Try different one",
                 )
 
         else:
             return jsonify(
                 success=False,
                 status_code=403,
-                message="Account not Found.try different one",
+                message="Account not Found. Try different one",
             )
