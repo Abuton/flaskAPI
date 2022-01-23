@@ -1,15 +1,13 @@
 import unittest
-import requests
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 import sys
 import os
-import json
 sys.path.append(os.path.abspath(os.path.join('..')))
 
 from bankAPI.app import db
 from bankAPI import create_app
-from bankAPI.model.database import Employees, Customers, Base
+from bankAPI.model.database import Base
 
 
 class BaseTestCase(unittest.TestCase):
@@ -19,18 +17,18 @@ class BaseTestCase(unittest.TestCase):
     def setUp(self):
         self.bank = create_app()
         # Set up database
-        engine = create_engine("sqlite://")
+        engine = create_engine("mysql://root@localhost:3306/bankAPI")
         Base.metadata.create_all(engine)
         # create db engine connection and start session
         Base.metadata.bind = engine
         db = scoped_session(sessionmaker(bind=engine))
 
-        emp = Employees("john mary", "jonny", "employee", "8712")
-        db.add(emp)
-        db.commit()
-        cust = Customers(5432, "Ibrahim Mubarak", "active")
-        db.add(cust)
-        db.commit()
+        # emp = Employees("john mary", "jonny", "employee", "8712")
+        # db.add(emp)
+        # db.commit()
+        # cust = Customers(5432, "Ibrahim Mubarak", "active")
+        # db.add(cust)
+        # db.commit()
 
     def tearDown(self):
         db.remove()
