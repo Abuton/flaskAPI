@@ -1,7 +1,6 @@
 import unittest
 import requests
 import json
-from pprint import pprint
 from base import BaseTestCase
 
 
@@ -20,7 +19,8 @@ class BackAPITest(BaseTestCase):
         params = {
             "cust_ssn_id": "4321",
             "acc_type": "test",
-            "amount": "56"
+            "amount": "56",
+            "account_id": "220012"
         }
 
         response = requests.post(self.URL + '/addaccount', data=params)
@@ -34,7 +34,22 @@ class BackAPITest(BaseTestCase):
         params = {
             "cust_ssn_id": "1234",
             "acc_type": "test",
-            "amount": "560"
+            "amount": "560",
+            "account_id": "220012"
+        }
+
+        response = requests.post(self.URL + '/addaccount', data=params)
+        response = response.content.decode("utf-8")
+        response = json.loads(response)
+        self.assertEqual(response["status_code"], 200)
+        self.assertIn("created", response["message"])
+
+    def test_addaccount_success_2(self):
+        params = {
+            "cust_ssn_id": "1234",
+            "acc_type": "test",
+            "amount": "1300",
+            "account_id": "220013"
         }
 
         response = requests.post(self.URL + '/addaccount', data=params)
@@ -46,8 +61,8 @@ class BackAPITest(BaseTestCase):
     def test_transfer_amount_success(self):
         params = {
             "cust_ssn_id": "1234",
-            "src_acc_id": "222906",
-            "trg_acc_id": "781303",
+            "src_acc_id": "220013",
+            "trg_acc_id": "220012",
             "amount": "2"
             }
 
@@ -59,8 +74,8 @@ class BackAPITest(BaseTestCase):
 
     def test_transfer_same_account_error(self):
         params = {"cust_ssn_id": "1234",
-                  "src_acc_id": "222906",
-                  "trg_acc_id": "222906",
+                  "src_acc_id": "220012",
+                  "trg_acc_id": "220012",
                   "amount": "150"}
 
         response = requests.post(self.URL + "/transfer", data=params)
@@ -71,8 +86,8 @@ class BackAPITest(BaseTestCase):
     def test_transfer_customer_id_error(self):
         params = {
             "cust_ssn_id": "32131",
-            "src_acc_id": "222906",
-            "trg_acc_id": "781303",
+            "src_acc_id": "220012",
+            "trg_acc_id": "220013",
             "amount": 200
         }
         response = requests.post(self.URL + "/transfer", data=params)
@@ -83,9 +98,9 @@ class BackAPITest(BaseTestCase):
     def test_transfer_amount_error(self):
         params = {
             "cust_ssn_id": "1234",
-            "src_acc_id": "222906",
-            "trg_acc_id": "781303",
-            "amount": 1000
+            "src_acc_id": "220012",
+            "trg_acc_id": "220013",
+            "amount": 1500
             }
 
         response = requests.post(self.URL + "/transfer", data=params)
@@ -97,7 +112,7 @@ class BackAPITest(BaseTestCase):
     def test_transfer_trg_id_error(self):
         params = {
             "cust_ssn_id": "1234",
-            "src_acc_id": "222906",
+            "src_acc_id": "220012",
             "trg_acc_id": "211122",
             "amount": 100
             }
@@ -112,7 +127,7 @@ class BackAPITest(BaseTestCase):
         params = {
             "cust_ssn_id": "1234",
             "src_acc_id": "209906",
-            "trg_acc_id": "781303",
+            "trg_acc_id": "220012",
             "amount": "300"
             }
 
@@ -123,12 +138,11 @@ class BackAPITest(BaseTestCase):
         self.assertIn("Source account not found", response["message"])
 
     def test_retrieve_transfer_history_success(self):
-        params = {"account_number": "222906"}
+        params = {"account_number": "220013"}
 
         response = requests.post(self.URL + '/transferhistory', data=params)
         response = response.content.decode("utf-8")
         response = json.loads(response)
-        # print("TR History", response)
         self.assertEqual(response["status_code"], 200)
         self.assertIn("TRANSFER", response["history"])
 
@@ -137,9 +151,7 @@ class BackAPITest(BaseTestCase):
 
         response = requests.post(self.URL + '/transferhistory', data=params)
         response = response.content.decode("utf-8")
-        print("TR Error History", response)
         response = json.loads(response)
-        print("TR Error History", response)
         self.assertEqual(response["status_code"], 403)
         self.assertIn("Account not Found", response["message"])
 
