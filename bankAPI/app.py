@@ -1,10 +1,8 @@
 import os
 from flask import request, jsonify, Blueprint
-import json
 from bankAPI.model.database import Base, Accounts, Transactions, CustomerLog, Customers
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-from bankAPI.utils import random_with_N_digits
 from flasgger import swag_from
 
 
@@ -18,11 +16,13 @@ engine = create_engine(
 )
 # create db engine connection and start session
 Base.metadata.bind = engine
-db = scoped_session(sessionmaker(
-    bind=engine,
-    autoflush=False,
-    autocommit=False
-    ))
+db = scoped_session(
+        sessionmaker(
+            bind=engine,
+            autoflush=False,
+            autocommit=False
+        )
+    )
 
 
 # route to add customers
@@ -165,6 +165,7 @@ def addaccount():
         cust_ssn_id = int(request.form.get("cust_ssn_id"))
         acc_type = request.form.get("acc_type")
         amount = float(request.form.get("amount"))
+        account_id = int(request.form.get('account_id'))
         message = "Account successfully created"
 
         # allow initial deposit of amount not less than 100
@@ -180,7 +181,6 @@ def addaccount():
         ).fetchone()
         if customer_info is not None:
             # get random 10 digits number as account_id
-            account_id = random_with_N_digits(6)
             query = Accounts(
                 acc_id=account_id,
                 acc_type=acc_type,
@@ -374,7 +374,7 @@ def retrieve_transfer_history():
         if account is not None:
             # get transfer history
             transfer_history = db.execute(
-                "select * from transactions where acc_id = :a and transacrion_type = 'TRANSFER' ",
+                "select * from transactions where acc_id = :a and transaction_type = 'TRANSFER' ",
                 {"a": account_number},
             ).fetchone()
             if transfer_history is not None:
