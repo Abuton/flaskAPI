@@ -31,8 +31,6 @@ Your assignment is to build an internal API for a fake financial institution usi
 To run the tests, user will have to change directory into the tests folder
 and execute
 
-- ``` python base.py ```
-- ``` python test.py ```
 - ``` python test_main_routes.py ```
 
 ### To build the docker Image
