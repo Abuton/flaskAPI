@@ -1,22 +1,27 @@
 import datetime
-from sqlalchemy import Column, ForeignKey, Integer, String, BigInteger
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
+import mysql.connector as mysql
 
-from sqlalchemy.orm import scoped_session, sessionmaker
-from flask_bcrypt import Bcrypt
-from flask import Flask
-
-app = Flask(__name__)
-engine = create_engine(
-    "mysql://root@localhost:3306/bankAPI"
-)
-db = scoped_session(sessionmaker(bind=engine))
-bcrypt = Bcrypt(app)
 Base = declarative_base()
-Base.metadata.bind = engine
+
+
+def DBConnect(dbName=None):
+    conn = mysql.connect(host='localhost', user='root',
+                         database=dbName, buffered=True)
+    cur = conn.cursor()
+    return conn, cur
+
+
+def createDB(dbName: str) -> None:
+    conn, cur = DBConnect()
+    cur.execute(f"DROP DATABASE IF EXISTS {dbName};")
+    cur.execute(f"CREATE DATABASE IF NOT EXISTS {dbName} CHARSET = utf8mb4 DEFAULT COLLATE = utf8mb4_unicode_ci;")
+    conn.commit()
+    cur.close()
 
 
 # model for employees table
@@ -128,32 +133,23 @@ class Transactions(Base):
     acc_id = Column(Integer, ForeignKey("accounts.acc_id"), nullable=False)
     trans_message = Column(String(250), nullable=False)
     amount = Column(Integer, nullable=False)
-    transacrion_type = Column(String(20), nullable=False)
+    transaction_type = Column(String(20), nullable=False)
     created_at = Column(DateTime(timezone=False), default=datetime.datetime.now())
 
     def __init__(self, acc_id, trans_message, amount, transaction_type):
         self.acc_id = acc_id
         self.trans_message = trans_message
         self.amount = amount
-        self.transacrion_type = transaction_type
+        self.transaction_type = transaction_type
 
     def __repr__(self):
         return '<trans_message - {}>'.format(self.trans_message)
 
 
-def create_db():
-    name = "bankAPI"
-    try:
-        db.execute(f"CREATE DATABASE IF NOT EXISTS {name}")
-        db.commit()
-        print(f"{name} DB created")
-    except Exception as e:
-        raise e
-
 if __name__ == "__main__":
     try:
         # create the database
-        # create_db()
+        createDB(dbName='bankAPI')
         engine = create_engine("mysql://root@localhost:3306/bankAPI", echo=False)
         Base.metadata.create_all(engine)
         print("All Model Created Successfully!")
